@@ -2,525 +2,213 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Etiketten‑Restmengen Rechner – Luye Pharma</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1381A6">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Luye Pharma Rollenrechner</title>
 
 <style>
-:root {
-  --luye-blue: #1381A6;
-  --luye-blue-dark: #06419F;
-  --luye-orange: #F05F39;
-}
+:root { --luye: #1381A6; --dark: #06419F; --bg: #f8fafc; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
 
-/* HEADER */
-.app-header {
-  position: sticky;
-  top: 0;
-  background: var(--luye-blue);
-  color: white;
-  padding: 14px 20px;
-  font-size: clamp(20px, 4vw, 28px);
-  font-weight: bold;
-  text-align: center;
-  border-bottom: 4px solid var(--luye-blue-dark);
-  z-index: 999;
-}
+.header { background: var(--luye); color: white; padding: 25px; text-align: center; font-weight: bold; font-size: 22px; border-bottom: 5px solid var(--dark); }
+.container { max-width: 500px; margin: auto; padding: 15px; padding-bottom: 100px; }
 
-/* BODY */
-.app-body {
-  padding: 20px;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f6f8;
-}
+.card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 13px; text-transform: uppercase; }
 
-.container {
-  max-width: 900px;
-  margin: auto;
-}
+.mess-info { background: #fff9c4; border: 1px solid #fef3c7; color: #92400e; padding: 12px; font-size: 14px; margin-bottom: 15px; border-radius: 8px; text-align: center; font-weight: 500; }
 
-/* INPUTS */
-input, select {
-  width: 100%;
-  padding: clamp(10px, 2vw, 16px);
-  font-size: clamp(18px, 3vw, 30px);
-  border-radius: 10px;
-  border: 2px solid var(--luye-blue);
-}
+select, input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+input[readonly] { background: #f1f5f9 !important; color: #64748b; font-weight: bold; border-style: dashed; }
 
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--luye-blue-dark);
-  box-shadow: 0 0 6px var(--luye-blue);
-}
+button { width: 100%; padding: 16px; background: var(--luye); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
 
-/* BUTTONS */
-button {
-  width: 100%;
-  border-radius: 12px;
-  padding: clamp(12px, 3vw, 20px);
-  font-size: clamp(20px, 3.5vw, 32px);
-  margin-top: 10px;
-  background: var(--luye-blue);
-  color: white;
-  border: none;
-}
+.result-box { background: white; border: 3px solid var(--luye); border-radius: 20px; text-align: center; padding: 25px; margin: 20px 0; }
+.res-val { font-size: 52px; font-weight: 800; color: var(--dark); display: block; line-height: 1; }
 
-button:hover {
-  background: var(--luye-blue-dark);
-}
+#balkenContainer { width: 100%; background: #e2e8f0; height: 12px; border-radius: 10px; overflow: hidden; margin-top: 15px; display:none; }
+#balken { height: 100%; width: 0%; background: var(--luye); transition: width 0.8s ease; }
 
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
-}
+#adminBtn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #1e293b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 9999; opacity: 0.3; }
 
-.full {
-  grid-column: 1 / -1;
-}
+#adminOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:10000; padding: 20px; box-sizing: border-box; }
+.admin-modal { background: white; color: #1e293b; width: 100%; max-width: 400px; margin: auto; padding: 30px; border-radius: 20px; }
 
-/* HINT */
-.hint {
-  background: #e8f6fa;
-  border-left: 5px solid var(--luye-blue);
-  padding: 14px;
-  border-radius: 8px;
-  font-size: clamp(14px, 2.5vw, 22px);
-}
-
-/* RESULT */
-.result {
-  margin-top: 30px;
-  text-align: center;
-  font-size: clamp(36px, 8vw, 64px);
-  font-weight: bold;
-  color: var(--luye-blue-dark);
-}
-
-.unit {
-  text-align: center;
-  font-size: clamp(14px, 2vw, 24px);
-  color: #555;
-}
-
-/* ERROR */
-.warn {
-  border: 3px solid var(--luye-orange) !important;
-  background: #ffe6e6 !important;
-}
-
-.blink {
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  50% { opacity: .2; }
-}
-
-/* ⭐ Füllstand-Balken */
-#balkenContainer {
-  width: 100%;
-  background: #ddd;
-  border-radius: 10px;
-  margin-top: 20px;
-  height: 30px;
-  overflow: hidden;
-  display: none;
-}
-
-#balkenFuellung {
-  height: 100%;
-  width: 0%;
-  background: green;
-  transition: width 0.6s ease, background 0.6s ease;
-}
-
-#balkenProzent {
-  text-align: center;
-  margin-top: 8px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-/* PRINT (Desktop only) */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-
-  #balkenContainer,
-  #balkenProzent {
-    display: none !important;
-  }
-}
+@media print { body * { visibility: hidden; } }
 </style>
 </head>
-
 <body>
 
-<div class="app-header">Etiketten‑Restmengen Rechner</div>
+<div class="header">Luye Rollenrechner</div>
 
-<div class="app-body">
-  <div class="container">
+<div class="container">
+    <div class="card">
+        <label>1. Auswahl Etiketten-Typ</label>
+        <select id="typ" onchange="ladePreset()">
+            <option value="">-- Rolle wählen --</option>
+            <option value="6000">6000 Stück (69mm)</option>
+            <option value="7000">7000 Stück (58mm)</option>
+            <option value="10000">10000 Stück (40mm)</option>
+        </select>
 
-    <h2>1. Etikettentyp auswählen</h2>
-    <select id="typ" onchange="ladePreset()">
-      <option value="">– Bitte auswählen –</option>
-      <option value="6000">6000 Stück · 69 mm</option>
-      <option value="7000">7000 Stück · 58 mm</option>
-      <option value="10000">10000 Stück · 40 mm</option>
-    </select>
+        <div class="mess-info">Messung: Hülse bis Außenkante (mm)</div>
+        <div class="mess-grafik" style="text-align:center; margin-bottom:15px;">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="#cbd5e1" stroke-width="1" fill="#f8fafc" />
+                <circle cx="50" cy="50" r="20" stroke="#475569" stroke-width="2" fill="#e2e8f0" />
+                <line x1="70" y1="50" x2="95" y2="50" stroke="#F05F39" stroke-width="3" />
+                <path d="M95 47 L100 50 L95 53 Z" fill="#F05F39" />
+                <path d="M70 47 L65 50 L70 53 Z" fill="#F05F39" />
+            </svg>
+        </div>
 
-    <h2>2. Messung durchführen</h2>
-    <div class="hint">
-      Messen Sie den <b>Abstand von der Hülse außen bis zum äußeren Rollenrand</b>.
+        <label>2. Messwert eingeben</label>
+        <input id="abstand" type="number" step="0.1" inputmode="decimal" placeholder="Messwert in mm" onkeydown="if(event.key==='Enter')berechnen()">
+        
+        <button onclick="berechnen()">BERECHNEN</button>
     </div>
 
-    <div class="grid">
-      <div>
-        <label>Abstand (mm)</label>
-        <input id="abstand" type="number" />
-      </div>
-
-      <div>
-        <label>Hülse Außendurchmesser (mm)</label>
-        <input id="dk" type="number" readonly style="background:#eee;">
-      </div>
-
-      <div>
-        <label>Etikettenlänge (mm)</label>
-        <input id="le" type="number" readonly style="background:#eee;">
-      </div>
-
-      <div>
-        <label>Abstand zwischen Etiketten (mm)</label>
-        <input id="a" type="number" readonly style="background:#eee;">
-      </div>
-
-      <div class="full">
-        <label>Materialdicke (mm)</label>
-        <input id="d" type="number" step="0.0001" readonly style="background:#eee;">
-      </div>
-
-      <div class="full">
-        <button onclick="berechnen()">Restmenge berechnen</button>
-      </div>
+    <div class="card" style="background: #f8fafc; border-style: dashed;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><label style="font-size:10px;">Kern Ø</label><input id="dk" readonly></div>
+            <div><label style="font-size:10px;">Länge le</label><input id="le" readonly></div>
+            <div><label style="font-size:10px;">Lücke a</label><input id="a" readonly></div>
+            <div><label style="font-size:10px;">Dicke d</label><input id="d" readonly></div>
+        </div>
     </div>
 
-    <div id="ergebnis" class="result">–</div>
-    <div class="unit">verbleibende Etiketten</div>
-
-    <!-- ⭐ Füllstand-Balken -->
-    <div id="balkenContainer">
-      <div id="balkenFuellung"></div>
+    <div class="result-box">
+        <span id="ergebnis" class="res-val">--</span>
+        <div style="font-size: 14px; color: #64748b; font-weight: 600;">Etiketten auf Rolle</div>
+        <div id="prozentText" style="font-weight:700; color: var(--luye); margin-top:10px;"></div>
+        <div id="balkenContainer"><div id="balken"></div></div>
     </div>
-    <div id="balkenProzent"></div>
 
-    <button onclick="druckDialog()">Drucken</button>
-
-  </div>
+    <div class="card">
+        <label>3. Protokoll-Daten</label>
+        <input id="auftrag" placeholder="Auftragsnummer">
+        <input id="charge" placeholder="Chargennummer / Gebinde">
+        <button onclick="drucken()" style="background:#1e293b;">GMP-PROTOKOLL DRUCKEN</button>
+    </div>
 </div>
 
-<!-- ADMIN BUTTON -->
-<button id="adminBtn" onclick="adminLogin()" style="
-  background:#ccc;
-  color:#444;
-  font-size:14px;
-  width:auto;
-  padding:6px 12px;
-  opacity:0.4;
-  position:fixed;
-  left:10px;
-  bottom:10px;
-  z-index:1000;
-">
-  Admin Einstellungen
-</button>
+<div id="adminBtn" onclick="openAdmin()">ADMIN</div>
 
-<!-- ADMIN POPUP -->
-<div id="adminPopup" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.6);
-  z-index:9999;
-">
-  <div style="
-    background:white;
-    width:90%;
-    max-width:400px;
-    margin:80px auto;
-    padding:20px;
-    border-radius:12px;
-  ">
-    <h3>Festwerte bearbeiten</h3>
-
-    <label>Etikettentyp</label>
-    <select id="adminTyp" onchange="adminLoadValues()">
-      <option value="6000">6000 Stück</option>
-      <option value="7000">7000 Stück</option>
-      <option value="10000">10000 Stück</option>
-    </select>
-
-    <label>Hülse Außendurchmesser (dk)</label>
-    <input id="admin_dk" type="number">
-
-    <label>Etikettenlänge (le)</label>
-    <input id="admin_le" type="number">
-
-    <label>Abstand (a)</label>
-    <input id="admin_a" type="number">
-
-    <label>Materialdicke (d)</label>
-    <input id="admin_d" type="number" step="0.0001">
-
-    <button onclick="adminSave()">Speichern</button>
-    <button onclick="adminClose()" style="background:#999;">Schließen</button>
-
-    <!-- ⭐ Kontakt im Popup -->
-    <div id="kontaktText" style="
-      margin-top:15px;
-      font-size:13px;
-      color:#06419F;
-      text-align:center;
-    ">
-      <a href="mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=Rollenrechner%20%3B"
-         style="color:#06419F; text-decoration:none;">
-         Sezgin Yavuz (E‑Mail)
-      </a>
+<div id="adminOverlay">
+    <div class="admin-modal">
+        <h3>Admin-Einstellungen</h3>
+        <input id="adminPW" type="password" placeholder="Passwort">
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <select id="adTyp" onchange="ladeAdminDaten()">
+            <option value="6000">6000er</option>
+            <option value="7000">7000er</option>
+            <option value="10000">10000er</option>
+        </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div><label>dk</label><input id="ad_dk" type="number" step="0.1"></div>
+          <div><label>le</label><input id="ad_le" type="number" step="0.1"></div>
+          <div><label>a</label><input id="ad_a" type="number" step="0.1"></div>
+          <div><label>d</label><input id="ad_d" type="number" step="0.0001"></div>
+        </div>
+        <button onclick="saveAdmin()" style="background:#059669;">SPEICHERN</button>
+        <button onclick="closeAdmin()" style="background:#64748b; margin-top:10px;">SCHLIESSEN</button>
     </div>
-
-  </div>
 </div>
 
 <script>
-const defaultPresets = {
-  "6000": {dk:84, le:69, a:4, d:0.1275},
-  "7000": {dk:84, le:58, a:4, d:0.1275},
-  "10000": {dk:84, le:40, a:4, d:0.1275}
+const defaultValues = {
+    "6000": {dk:84, le:69, a:4, d:0.1275},
+    "7000": {dk:84, le:58, a:4, d:0.1275},
+    "10000": {dk:84, le:40, a:4, d:0.1275}
 };
+let db = JSON.parse(localStorage.getItem("luye_v9")) || defaultValues;
 
-let presets = { ...defaultPresets };
-
-window.addEventListener("load", () => {
-  const saved = localStorage.getItem("etiketten_presets");
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      for (const key of Object.keys(defaultPresets)) {
-        if (parsed[key]) presets[key] = parsed[key];
-      }
-    } catch {}
-  }
-});
-
-function ladePreset(){
-  const t = typ.value;
-  if(!presets[t]) return;
-  dk.value = presets[t].dk;
-  le.value = presets[t].le;
-  a.value  = presets[t].a;
-  d.value  = presets[t].d;
+function ladePreset() {
+    const w = document.getElementById("typ").value;
+    if(w && db[w]) {
+        document.getElementById("dk").value = db[w].dk;
+        document.getElementById("le").value = db[w].le;
+        document.getElementById("a").value = db[w].a;
+        document.getElementById("d").value = db[w].d;
+    }
 }
-
-/* SYSTEMFELDER SPERREN */
-["dk", "le", "a", "d"].forEach(id => {
-  const el = document.getElementById(id);
-  el.addEventListener("keydown", e => e.preventDefault());
-  el.addEventListener("wheel", e => e.preventDefault(), { passive: false });
-  el.addEventListener("mousedown", e => e.preventDefault());
-  el.addEventListener("touchstart", e => e.preventDefault());
-});
 
 function berechnen() {
-  [abstand, dk, le, a, d].forEach(i => i.classList.remove('warn', 'blink'));
-  ergebnis.classList.remove('blink');
-
-  const AB = Number(abstand.value);
-  const DK = Number(dk.value);
-  const LE = Number(le.value);
-  const A  = Number(a.value);
-  const D  = Number(d.value);
-
-  if ([AB].some(v => isNaN(v) || v <= 0)) {
-    abstand.classList.add('warn','blink');
-    ergebnis.innerText = "FEHLER";
-    ergebnis.style.color = 'var(--luye-orange)';
-    return;
-  }
-
-  let fehler = false;
-
-  const maxAbstand = { "6000": 160, "7000": 160, "10000": 160 };
-  const maxAB = maxAbstand[typ.value] || 160;
-
-  if (AB < 1 || AB > maxAB) {
-    fehler = true;
-    abstand.classList.add('warn','blink');
-  }
-
-  if (fehler) {
-    ergebnis.innerText = "FEHLER";
-    ergebnis.style.color = 'var(--luye-orange)';
-    return;
-  }
-
-  const DA = DK + 2 * AB;
-
-  const anzahl = Math.floor(
-    Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
-  );
-
-  const typMax = { "6000": 6000, "7000": 7000, "10000": 10000 };
-  const max = typMax[typ.value] || 999999;
-
-  if (anzahl > max) {
-    ergebnis.classList.add('blink');
-    ergebnis.style.color = 'var(--luye-orange)';
-  } else {
-    ergebnis.classList.remove('blink');
-    ergebnis.style.color = 'var(--luye-blue-dark)';
-  }
-
-  ergebnis.innerText = anzahl;
-
-  /* ⭐ Füllstand-Balken aktualisieren */
-  let prozent = Math.round((anzahl / max) * 100);
-
-  if (prozent < 0) prozent = 0;
-  if (prozent > 150) prozent = 150;
-
-  document.getElementById("balkenContainer").style.display = "block";
-  document.getElementById("balkenFuellung").style.width = prozent + "%";
-
-  let farbe = "green";
-  if (prozent < 60) farbe = "green";
-  if (prozent < 40) farbe = "orange";
-  if (prozent < 20) farbe = "red";
-  if (prozent > 100) farbe = "red";
-
-  document.getElementById("balkenFuellung").style.background = farbe;
-  document.getElementById("balkenProzent").innerText = prozent + "%";
-
-  if (prozent > 100) {
-    document.getElementById("balkenFuellung").classList.add("blink");
-  } else {
-    document.getElementById("balkenFuellung").classList.remove("blink");
-  }
+    const t = document.getElementById("typ").value;
+    const m = parseFloat(document.getElementById("abstand").value);
+    const DK = parseFloat(document.getElementById("dk").value);
+    const LE = parseFloat(document.getElementById("le").value);
+    const A = parseFloat(document.getElementById("a").value);
+    const D = parseFloat(document.getElementById("d").value);
+    if(!t || isNaN(m)) return;
+    const DA = DK + (2 * m);
+    const erg = Math.max(0, Math.floor((Math.PI * (DA*DA - DK*DK)) / (4 * D * (LE + A))));
+    document.getElementById("ergebnis").innerText = erg.toLocaleString('de-DE');
+    const p = Math.min(100, Math.round((erg / parseInt(t)) * 100));
+    document.getElementById("balkenContainer").style.display = "block";
+    document.getElementById("balken").style.width = p + "%";
+    document.getElementById("prozentText").innerText = p + "% Restmenge";
 }
 
-/* ⭐ DRUCKMETHODE MIT ZEITSTEMPEL UNTEN LINKS */
-function druckDialog() {
-
-  const jetzt = new Date();
-  const zeit = 
-    jetzt.toLocaleDateString("de-DE") + " – " +
-    jetzt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
-
-  const typText = typ.options[typ.selectedIndex]?.text || "-";
-  const restText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
-
-  const auftrag = document.getElementById("druck_auftrag")?.value || "";
-  const material = document.getElementById("druck_material")?.value || "";
-  const charge = document.getElementById("druck_charge")?.value || "";
-
-  const w = window.open("", "_blank");
-
-  w.document.write(`
-    <html>
-    <head>
-      <title>Druck</title>
-      <style>
-        body { font-family: Arial; padding: 20px; }
-
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        td { padding: 8px; border-bottom: 1px solid #000; }
-        .label { font-weight: bold; width: 150px; }
-
-        #timestamp {
-          position: fixed;
-          bottom: 15mm;
-          left: 15mm;
-          font-size: 12px;
-        }
-      </style>
-    </head>
-    <body>
-
-      <h2>Etiketten‑Restmengen Dokumentation</h2>
-
-      <table>
-        <tr><td class="label">Etikettentyp</td><td>${typText}</td></tr>
-        <tr><td class="label">Restmenge</td><td>${restText}</td></tr>
-        <tr><td class="label">Auftragsnummer</td><td>${auftrag}</td></tr>
-        <tr><td class="label">Materialnummer</td><td>${material}</td></tr>
-        <tr><td class="label">Chargennummer</td><td>${charge}</td></tr>
-      </table>
-
-      <div id="timestamp">
-        Datum / Kürzel: ______________________<br><br>
-        ${zeit}
-      </div>
-
-    </body>
-    </html>
-  `);
-
-  w.document.close();
-  w.print();
-  w.close();
+function openAdmin() { document.getElementById("adminOverlay").style.display = "block"; ladeAdminDaten(); }
+function closeAdmin() { document.getElementById("adminOverlay").style.display = "none"; }
+function ladeAdminDaten() {
+    const t = document.getElementById("adTyp").value;
+    document.getElementById("ad_dk").value = db[t].dk;
+    document.getElementById("ad_le").value = db[t].le;
+    document.getElementById("ad_a").value = db[t].a;
+    document.getElementById("ad_d").value = db[t].d;
+}
+function saveAdmin() {
+    if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
+    const t = document.getElementById("adTyp").value;
+    db[t] = { dk: parseFloat(document.getElementById("ad_dk").value), le: parseFloat(document.getElementById("ad_le").value), a: parseFloat(document.getElementById("ad_a").value), d: parseFloat(document.getElementById("ad_d").value) };
+    localStorage.setItem("luye_v9", JSON.stringify(db));
+    ladePreset(); closeAdmin();
 }
 
-function adminLogin() {
-  const pw = prompt("Passwort eingeben:");
-  if (pw === "11111111") {
-    adminPopup.style.display = "block";
-    adminLoadValues();
-  } else if (pw !== null) {
-    alert("Falsches Passwort");
-  }
-}
-
-function adminClose() {
-  adminPopup.style.display = "none";
-}
-
-function adminLoadValues() {
-  const t = adminTyp.value;
-  const p = presets[t];
-  admin_dk.value = p.dk;
-  admin_le.value = p.le;
-  admin_a.value  = p.a;
-  admin_d.value  = p.d;
-}
-
-function adminSave() {
-  const t = adminTyp.value;
-  presets[t] = {
-    dk: Number(admin_dk.value),
-    le: Number(admin_le.value),
-    a:  Number(admin_a.value),
-    d:  Number(admin_d.value)
-  };
-  localStorage.setItem("etiketten_presets", JSON.stringify(presets));
-  alert("Festwerte gespeichert");
-  adminClose();
+function drucken() {
+    const r = document.getElementById("ergebnis").innerText;
+    if(r === "--") return;
+    const jetzt = new Date();
+    const ts = jetzt.toLocaleDateString("de-DE") + " - " + jetzt.getHours().toString().padStart(2,'0') + ":" + jetzt.getMinutes().toString().padStart(2,'0');
+    
+    const w = window.open("", "_blank");
+    w.document.write(`
+        <html>
+        <head>
+            <style>
+                body { font-family: Courier, monospace; padding: 50px; }
+                .header-p { border-bottom: 2px solid #000; text-align: center; margin-bottom: 30px; padding-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; }
+                td { padding: 15px; border: 1px solid #000; font-size: 18px; }
+                .bold { font-weight: bold; font-size: 22px; }
+                .sig-area { margin-top: 80px; text-align: left; }
+                .sig-line { border-top: 1px solid #000; width: 350px; padding-top: 5px; font-size: 16px; margin-top: 40px; }
+                .footer { position: fixed; bottom: 30px; left: 30px; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="header-p"><h2>Restmengen-Bewertung (Luye Pharma)</h2></div>
+            <table>
+                <tr><td>Restmenge:</td><td class="bold">${r} Stück</td></tr>
+                <tr><td>Rollen-Basis:</td><td>${document.getElementById("typ").value}er Rolle</td></tr>
+                <tr><td>Auftrag:</td><td>${document.getElementById("auftrag").value || "---"}</td></tr>
+                <tr><td>Charge:</td><td>${document.getElementById("charge").value || "---"}</td></tr>
+            </table>
+            <div class="sig-area">
+                <div class="sig-line">Datum / Kürzel:</div>
+            </div>
+            <div class="footer">Druckzeitpunkt: ${ts} Uhr</div>
+        </body>
+        </html>
+    `);
+    w.document.close();
+    w.print();
 }
 </script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
-</script>
-
 </body>
 </html>
+
 
 
 

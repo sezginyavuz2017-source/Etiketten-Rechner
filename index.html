@@ -121,10 +121,40 @@ button:hover {
   50% { opacity: .2; }
 }
 
+/* ⭐ Füllstand-Balken */
+#balkenContainer {
+  width: 100%;
+  background: #ddd;
+  border-radius: 10px;
+  margin-top: 20px;
+  height: 30px;
+  overflow: hidden;
+  display: none;
+}
+
+#balkenFuellung {
+  height: 100%;
+  width: 0%;
+  background: green;
+  transition: width 0.6s ease, background 0.6s ease;
+}
+
+#balkenProzent {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
 /* PRINT (Desktop only) */
 @media print {
   body * {
     visibility: hidden;
+  }
+
+  #balkenContainer,
+  #balkenProzent {
+    display: none !important;
   }
 }
 </style>
@@ -183,6 +213,12 @@ button:hover {
 
     <div id="ergebnis" class="result">–</div>
     <div class="unit">verbleibende Etiketten</div>
+
+    <!-- ⭐ Füllstand-Balken -->
+    <div id="balkenContainer">
+      <div id="balkenFuellung"></div>
+    </div>
+    <div id="balkenProzent"></div>
 
     <button onclick="druckDialog()">Drucken</button>
 
@@ -352,9 +388,33 @@ function berechnen() {
   }
 
   ergebnis.innerText = anzahl;
+
+  /* ⭐ Füllstand-Balken aktualisieren */
+  let prozent = Math.round((anzahl / max) * 100);
+
+  if (prozent < 0) prozent = 0;
+  if (prozent > 150) prozent = 150;
+
+  document.getElementById("balkenContainer").style.display = "block";
+  document.getElementById("balkenFuellung").style.width = prozent + "%";
+
+  let farbe = "green";
+  if (prozent < 60) farbe = "green";
+  if (prozent < 40) farbe = "orange";
+  if (prozent < 20) farbe = "red";
+  if (prozent > 100) farbe = "red";
+
+  document.getElementById("balkenFuellung").style.background = farbe;
+  document.getElementById("balkenProzent").innerText = prozent + "%";
+
+  if (prozent > 100) {
+    document.getElementById("balkenFuellung").classList.add("blink");
+  } else {
+    document.getElementById("balkenFuellung").classList.remove("blink");
+  }
 }
 
-/* ⭐ NEUE DRUCKMETHODE MIT ZEITSTEMPEL UNTEN LINKS */
+/* ⭐ DRUCKMETHODE MIT ZEITSTEMPEL UNTEN LINKS */
 function druckDialog() {
 
   const jetzt = new Date();
@@ -382,7 +442,6 @@ function druckDialog() {
         td { padding: 8px; border-bottom: 1px solid #000; }
         .label { font-weight: bold; width: 150px; }
 
-        /* ⭐ Zeitstempel unten links */
         #timestamp {
           position: fixed;
           bottom: 15mm;
@@ -462,7 +521,6 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
-
 
 
 

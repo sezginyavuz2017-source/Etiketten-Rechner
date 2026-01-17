@@ -121,82 +121,10 @@ button:hover {
   50% { opacity: .2; }
 }
 
-/* PRINT */
+/* PRINT (Desktop only) */
 @media print {
-
-  @page {
-    margin: 0;
-  }
-
   body * {
     visibility: hidden;
-  }
-
-  #druckseite, #druckseite * {
-    visibility: visible;
-  }
-
-  #druckseite {
-    position: absolute;
-    top: 15mm;
-    left: 20mm;
-    width: 170mm;
-    font-size: 13pt;
-    line-height: 1.45;
-  }
-
-  .druck-tabelle {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 15mm;
-  }
-
-  .druck-tabelle td {
-    padding: 3mm 2mm;
-    border-bottom: 1px solid var(--luye-blue-dark);
-  }
-
-  .druck-label {
-    font-weight: bold;
-    width: 45mm;
-    color: var(--luye-blue-dark);
-  }
-
-  #druckseite input {
-    border: none !important;
-    outline: none !important;
-    font-size: 13pt;
-    width: 100%;
-    padding: 1mm 0;
-  }
-
-  /* ⭐ Zeitstempel unten links */
-  #druck_timestamp {
-    position: fixed;
-    bottom: 5mm;
-    left: 8mm;
-    font-size: 10pt;
-    color: #000;
-  }
-
-  #druckFuss {
-    position: fixed;
-    bottom: 20mm;
-    left: 20mm;
-    font-size: 12pt;
-  }
-
-  #adminBtn, #kontaktText, #adminPopup {
-    display: none !important;
-  }
-}
-
-/* ⭐ Handy‑Fix */
-@media (max-width: 480px) {
-  #kontaktText {
-    left: 10px !important;
-    bottom: 60px !important;
-    transform: scale(0.95);
   }
 }
 </style>
@@ -261,44 +189,6 @@ button:hover {
   </div>
 </div>
 
-<!-- DRUCKSEITE -->
-<div id="druckseite" style="display:none">
-
-  <h2>Etiketten‑Restmengen Dokumentation</h2>
-
-  <table class="druck-tabelle">
-    <tr>
-      <td class="druck-label">Etikettentyp</td>
-      <td id="druck_typ"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Restmenge</td>
-      <td id="druck_rest"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Auftragsnummer</td>
-      <td><input id="druck_auftrag"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Materialnummer</td>
-      <td><input id="druck_material"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Chargennummer</td>
-      <td><input id="druck_charge"></td>
-    </tr>
-  </table>
-
-  <div id="druck_timestamp">
-    <span id="druck_datum"></span>
-  </div>
-
-  <div id="druckFuss">
-    Datum / Kürzel: ______________________
-  </div>
-
-</div>
-
 <!-- ADMIN BUTTON -->
 <button id="adminBtn" onclick="adminLogin()" style="
   background:#ccc;
@@ -314,22 +204,6 @@ button:hover {
 ">
   Admin Einstellungen
 </button>
-
-<!-- ⭐ KONTAKT TEXT (A4) -->
-<div id="kontaktText" style="
-  position:fixed;
-  left:10px;
-  bottom:40px;
-  font-size:13px;
-  color:#06419F;
-  z-index:1000;
-  white-space:nowrap;
-">
-  <a href="mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=Rollenrechner%20%3B"
-     style="color:#06419F; text-decoration:none;">
-     Sezgin Yavuz (E‑Mail)
-  </a>
-</div>
 
 <!-- ADMIN POPUP -->
 <div id="adminPopup" style="
@@ -371,6 +245,20 @@ button:hover {
 
     <button onclick="adminSave()">Speichern</button>
     <button onclick="adminClose()" style="background:#999;">Schließen</button>
+
+    <!-- ⭐ Kontakt im Popup -->
+    <div id="kontaktText" style="
+      margin-top:15px;
+      font-size:13px;
+      color:#06419F;
+      text-align:center;
+    ">
+      <a href="mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=Rollenrechner%20%3B"
+         style="color:#06419F; text-decoration:none;">
+         Sezgin Yavuz (E‑Mail)
+      </a>
+    </div>
+
   </div>
 </div>
 
@@ -404,7 +292,7 @@ function ladePreset(){
   d.value  = presets[t].d;
 }
 
-/* ⭐ SYSTEMFELDER 100% SPERREN */
+/* SYSTEMFELDER SPERREN */
 ["dk", "le", "a", "d"].forEach(id => {
   const el = document.getElementById(id);
   el.addEventListener("keydown", e => e.preventDefault());
@@ -466,38 +354,67 @@ function berechnen() {
   ergebnis.innerText = anzahl;
 }
 
-/* ⭐ STABILER DRUCK‑FIX */
+/* ⭐ NEUE DRUCKMETHODE MIT ZEITSTEMPEL UNTEN LINKS */
 function druckDialog() {
 
-  druck_typ.innerText = typ.options[typ.selectedIndex]?.text || "-";
-  druck_rest.innerText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
-
   const jetzt = new Date();
-  druck_datum.innerText =
+  const zeit = 
     jetzt.toLocaleDateString("de-DE") + " – " +
     jetzt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-  druckseite.style.display = "block";
+  const typText = typ.options[typ.selectedIndex]?.text || "-";
+  const restText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
+  const auftrag = document.getElementById("druck_auftrag")?.value || "";
+  const material = document.getElementById("druck_material")?.value || "";
+  const charge = document.getElementById("druck_charge")?.value || "";
 
-      window.print();
+  const w = window.open("", "_blank");
 
-      druckseite.style.display = "none";
-      druck_typ.innerText = "";
-      druck_rest.innerText = "";
-      druck_datum.innerText = "";
-    });
-  });
-}
+  w.document.write(`
+    <html>
+    <head>
+      <title>Druck</title>
+      <style>
+        body { font-family: Arial; padding: 20px; }
 
-/* ⭐ KONTAKT FUNKTION */
-function kontaktMail() {
-  const subject = encodeURIComponent("Rollenrechner ; ");
-  const mailto =
-    "mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=" + subject;
-  window.location.href = mailto;
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        td { padding: 8px; border-bottom: 1px solid #000; }
+        .label { font-weight: bold; width: 150px; }
+
+        /* ⭐ Zeitstempel unten links */
+        #timestamp {
+          position: fixed;
+          bottom: 15mm;
+          left: 15mm;
+          font-size: 12px;
+        }
+      </style>
+    </head>
+    <body>
+
+      <h2>Etiketten‑Restmengen Dokumentation</h2>
+
+      <table>
+        <tr><td class="label">Etikettentyp</td><td>${typText}</td></tr>
+        <tr><td class="label">Restmenge</td><td>${restText}</td></tr>
+        <tr><td class="label">Auftragsnummer</td><td>${auftrag}</td></tr>
+        <tr><td class="label">Materialnummer</td><td>${material}</td></tr>
+        <tr><td class="label">Chargennummer</td><td>${charge}</td></tr>
+      </table>
+
+      <div id="timestamp">
+        Datum / Kürzel: ______________________<br><br>
+        ${zeit}
+      </div>
+
+    </body>
+    </html>
+  `);
+
+  w.document.close();
+  w.print();
+  w.close();
 }
 
 function adminLogin() {
@@ -545,6 +462,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 

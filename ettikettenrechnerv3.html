@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Etiketten‑Restmengen Rechner – Luye Pharma</title>
+
+<style>
+:root {
+  --luye-blue: #1381A6;
+  --luye-blue-dark: #06419F;
+  --luye-orange: #F05F39;
+}
+
+/* HEADER */
+.app-header {
+  position: sticky;
+  top: 0;
+  background: var(--luye-blue);
+  color: white;
+  padding: 14px 20px;
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 4px solid var(--luye-blue-dark);
+  z-index: 999;
+}
+
+/* BODY */
+.app-body {
+  padding: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f8;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+/* INPUTS */
+input, select {
+  width: 100%;
+  padding: clamp(10px, 2vw, 16px);
+  font-size: clamp(18px, 3vw, 30px);
+  border-radius: 10px;
+  border: 2px solid var(--luye-blue);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--luye-blue-dark);
+  box-shadow: 0 0 6px var(--luye-blue);
+}
+
+/* BUTTONS */
+button {
+  width: 100%;
+  border-radius: 12px;
+  padding: clamp(12px, 3vw, 20px);
+  font-size: clamp(20px, 3.5vw, 32px);
+  margin-top: 10px;
+  background: var(--luye-blue);
+  color: white;
+  border: none;
+}
+
+button:hover {
+  background: var(--luye-blue-dark);
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+/* HINT */
+.hint {
+  background: #e8f6fa;
+  border-left: 5px solid var(--luye-blue);
+  padding: 14px;
+  border-radius: 8px;
+  font-size: clamp(14px, 2.5vw, 22px);
+}
+
+/* RESULT */
+.result {
+  margin-top: 30px;
+  text-align: center;
+  font-size: clamp(36px, 8vw, 64px);
+  font-weight: bold;
+  color: var(--luye-blue-dark);
+}
+
+.unit {
+  text-align: center;
+  font-size: clamp(14px, 2vw, 24px);
+  color: #555;
+}
+
+/* ERROR */
+.warn {
+  border: 3px solid var(--luye-orange) !important;
+  background: #ffe6e6 !important;
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: .2; }
+}
+
+/* PRINT */
+@media print {
+
+  @page {
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #druckseite, #druckseite * {
+    visibility: visible;
+  }
+
+  #druckseite {
+    position: absolute;
+    top: 15mm;
+    left: 20mm;
+    width: 170mm;
+    font-size: 13pt;
+    line-height: 1.45;
+  }
+
+  .druck-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15mm;
+  }
+
+  .druck-tabelle td {
+    padding: 3mm 2mm;
+    border-bottom: 1px solid var(--luye-blue-dark);
+  }
+
+  .druck-label {
+    font-weight: bold;
+    width: 45mm;
+    color: var(--luye-blue-dark);
+  }
+
+  /* Eingabefelder ohne Linien im Druck */
+  #druckseite input {
+    border: none !important;
+    outline: none !important;
+    font-size: 13pt;
+    width: 100%;
+    padding: 1mm 0;
+  }
+
+  /* Zeitstempel unten links */
+  #druck_timestamp {
+    position: fixed;
+    bottom: 5mm;
+    left: 8mm;
+    font-size: 10pt;
+    color: #000;
+  }
+
+  #druckFuss {
+    position: fixed;
+    bottom: 20mm;
+    left: 20mm;
+    font-size: 12pt;
+  }
+
+  #adminBtn, #adminPopup {
+    display: none !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-header">Etiketten‑Restmengen Rechner</div>
+
+<div class="app-body">
+  <div class="container">
+
+    <h2>1. Etikettentyp auswählen</h2>
+    <select id="typ" onchange="ladePreset()">
+      <option value="">– Bitte auswählen –</option>
+      <option value="6000">6000 Stück · 69 mm</option>
+      <option value="7000">7000 Stück · 58 mm</option>
+      <option value="10000">10000 Stück · 40 mm</option>
+    </select>
+
+    <h2>2. Messung durchführen</h2>
+    <div class="hint">
+      Messen Sie den <b>Abstand von der Hülse außen bis zum äußeren Rollenrand</b>.
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Abstand (mm)</label>
+        <input id="abstand" type="number" />
+      </div>
+
+      <div>
+        <label>Hülse Außendurchmesser (mm)</label>
+        <input id="dk" type="number" readonly style="background:#eee;">
+      </div>
+
+      <div>
+        <label>Etikettenlänge (mm)</label>
+        <input id="le" type="number" readonly style="background:#eee;">
+      </div>
+
+      <div>
+        <label>Abstand zwischen Etiketten (mm)</label>
+        <input id="a" type="number" readonly style="background:#eee;">
+      </div>
+
+      <div class="full">
+        <label>Materialdicke (mm)</label>
+        <input id="d" type="number" step="0.0001" readonly style="background:#eee;">
+      </div>
+
+      <div class="full">
+        <button onclick="berechnen()">Restmenge berechnen</button>
+      </div>
+    </div>
+
+    <div id="ergebnis" class="result">–</div>
+    <div class="unit">verbleibende Etiketten</div>
+
+    <button onclick="druckDialog()">Drucken</button>
+
+  </div>
+</div>
+
+<!-- DRUCKSEITE -->
+<div id="druckseite" style="display:none">
+
+  <h2>Etiketten‑Restmengen Dokumentation</h2>
+
+  <table class="druck-tabelle">
+    <tr>
+      <td class="druck-label">Etikettentyp</td>
+      <td id="druck_typ"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Restmenge</td>
+      <td id="druck_rest"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Auftragsnummer</td>
+      <td><input id="druck_auftrag"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Materialnummer</td>
+      <td><input id="druck_material"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Chargennummer</td>
+      <td><input id="druck_charge"></td>
+    </tr>
+  </table>
+
+  <div id="druck_timestamp">
+    <span id="druck_datum"></span>
+  </div>
+
+  <div id="druckFuss">
+    Datum / Kürzel: ______________________
+  </div>
+
+</div>
+
+<!-- ADMIN BUTTON -->
+<button id="adminBtn" onclick="adminLogin()" style="
+  background:#ccc;
+  color:#444;
+  font-size:14px;
+  width:auto;
+  padding:6px 12px;
+  opacity:0.4;
+  position:fixed;
+  left:10px;
+  bottom:10px;
+  z-index:1000;
+">
+  Admin Einstellungen
+</button>
+
+<!-- ADMIN POPUP -->
+<div id="adminPopup" style="
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.6);
+  z-index:9999;
+">
+  <div style="
+    background:white;
+    width:90%;
+    max-width:400px;
+    margin:80px auto;
+    padding:20px;
+    border-radius:12px;
+  ">
+    <h3>Festwerte bearbeiten</h3>
+
+    <label>Etikettentyp</label>
+    <select id="adminTyp" onchange="adminLoadValues()">
+      <option value="6000">6000 Stück</option>
+      <option value="7000">7000 Stück</option>
+      <option value="10000">10000 Stück</option>
+    </select>
+
+    <label>Hülse Außendurchmesser (dk)</label>
+    <input id="admin_dk" type="number">
+
+    <label>Etikettenlänge (le)</label>
+    <input id="admin_le" type="number">
+
+    <label>Abstand (a)</label>
+    <input id="admin_a" type="number">
+
+    <label>Materialdicke (d)</label>
+    <input id="admin_d" type="number" step="0.0001">
+
+    <button onclick="adminSave()">Speichern</button>
+    <button onclick="adminClose()" style="background:#999;">Schließen</button>
+  </div>
+</div>
+
+<script>
+const defaultPresets = {
+  "6000": {dk:84, le:69, a:4, d:0.1275},
+  "7000": {dk:84, le:58, a:4, d:0.1275},
+  "10000": {dk:84, le:40, a:4, d:0.1275}
+};
+
+let presets = { ...defaultPresets };
+
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("etiketten_presets");
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      for (const key of Object.keys(defaultPresets)) {
+        if (parsed[key]) presets[key] = parsed[key];
+      }
+    } catch {}
+  }
+});
+
+function ladePreset(){
+  const t = typ.value;
+  if(!presets[t]) return;
+  dk.value = presets[t].dk;
+  le.value = presets[t].le;
+  a.value  = presets[t].a;
+  d.value  = presets[t].d;
+}
+
+function berechnen() {
+  [abstand, dk, le, a, d].forEach(i => i.classList.remove('warn', 'blink'));
+  ergebnis.classList.remove('blink');
+
+  const AB = Number(abstand.value);
+  const DK = Number(dk.value);
+  const LE = Number(le.value);
+  const A  = Number(a.value);
+  const D  = Number(d.value);
+
+  if ([AB].some(v => isNaN(v) || v <= 0)) {
+    abstand.classList.add('warn','blink');
+    ergebnis.innerText = "FEHLER";
+    ergebnis.style.color = 'var(--luye-orange)';
+    return;
+  }
+
+  let fehler = false;
+
+  if (AB < 1 || AB > 80) { fehler = true; abstand.classList.add('warn','blink'); }
+  if (DK < 20 || DK > 120) { fehler = true; dk.classList.add('warn','blink'); }
+  if (LE < 20 || LE > 200) { fehler = true; le.classList.add('warn','blink'); }
+  if (A < 0 || A > 20) { fehler = true; a.classList.add('warn','blink'); }
+  if (D < 0.05 || D > 0.5) { fehler = true; d.classList.add('warn','blink'); }
+
+  if (DK >= DK + 2 * AB) {
+    fehler = true;
+    abstand.classList.add('warn','blink');
+    dk.classList.add('warn','blink');
+  }
+
+  if (fehler) {
+    ergebnis.innerText = "FEHLER";
+    ergebnis.style.color = 'var(--luye-orange)';
+    return;
+  }
+
+  const DA = DK + 2 * AB;
+  const anzahl = Math.floor(
+    Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
+  );
+
+  const typMax = {
+    "6000": 6000,
+    "7000": 7000,
+    "10000": 10000
+  };
+
+  const max = typMax[typ.value] || 15000;
+
+  if (anzahl < 50 || anzahl > max) {
+    ergebnis.classList.add('blink');
+    ergebnis.style.color = 'var(--luye-orange)';
+  } else {
+    ergebnis.style.color = 'var(--luye-blue-dark)';
+  }
+
+  ergebnis.innerText = anzahl;
+}
+
+function druckDialog(){
+  druck_typ.innerText = typ.options[typ.selectedIndex]?.text || "-";
+  druck_rest.innerText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
+
+  const jetzt = new Date();
+  druck_datum.innerText =
+    jetzt.toLocaleDateString("de-DE") + " – " +
+    jetzt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+  druckseite.style.display = 'block';
+  window.print();
+  druckseite.style.display = 'none';
+}
+
+function adminLogin() {
+  const pw = prompt("Passwort eingeben:");
+  if (pw === "11111111") {
+    adminPopup.style.display = "block";
+    adminLoadValues();
+  } else if (pw !== null) {
+    alert("Falsches Passwort");
+  }
+}
+
+function adminClose() {
+  adminPopup.style.display = "none";
+}
+
+function adminLoadValues() {
+  const t = adminTyp.value;
+  const p = presets[t];
+  admin_dk.value = p.dk;
+  admin_le.value = p.le;
+  admin_a.value  = p.a;
+  admin_d.value  = p.d;
+}
+
+function adminSave() {
+  const t = adminTyp.value;
+  presets[t] = {
+    dk: Number(admin_dk.value),
+    le: Number(admin_le.value),
+    a:  Number(admin_a.value),
+    d:  Number(admin_d.value)
+  };
+  localStorage.setItem("etiketten_presets", JSON.stringify(presets));
+  alert("Festwerte gespeichert");
+  adminClose();
+}
+</script>
+
+</body>
+</html>

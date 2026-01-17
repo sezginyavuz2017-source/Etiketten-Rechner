@@ -4,7 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Etiketten‑Restmengen Rechner – Luye Pharma</title>
-<link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#1381A6">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1381A6">
 
 <style>
 :root {
@@ -143,10 +145,6 @@ button:hover {
     line-height: 1.45;
   }
 
-  #druck_logo {
-    margin-bottom: 12mm;
-  }
-
   .druck-tabelle {
     width: 100%;
     border-collapse: collapse;
@@ -165,14 +163,13 @@ button:hover {
   }
 
   #druckseite input {
-    border: none;
-    border-bottom: 1px solid #000;
+    border: none !important;
+    outline: none !important;
     font-size: 13pt;
     width: 100%;
     padding: 1mm 0;
   }
 
-  /* ⭐ FIX: Zeitstempel wirklich unten links */
   #druck_timestamp {
     position: fixed;
     bottom: 5mm;
@@ -220,22 +217,27 @@ button:hover {
         <label>Abstand (mm)</label>
         <input id="abstand" type="number" />
       </div>
+
       <div>
         <label>Hülse Außendurchmesser (mm)</label>
-        <input id="dk" type="number" />
+        <input id="dk" type="number" readonly style="background:#eee;">
       </div>
+
       <div>
         <label>Etikettenlänge (mm)</label>
-        <input id="le" type="number" />
+        <input id="le" type="number" readonly style="background:#eee;">
       </div>
+
       <div>
         <label>Abstand zwischen Etiketten (mm)</label>
-        <input id="a" type="number" />
+        <input id="a" type="number" readonly style="background:#eee;">
       </div>
+
       <div class="full">
         <label>Materialdicke (mm)</label>
-        <input id="d" type="number" step="0.0001" />
+        <input id="d" type="number" step="0.0001" readonly style="background:#eee;">
       </div>
+
       <div class="full">
         <button onclick="berechnen()">Restmenge berechnen</button>
       </div>
@@ -252,19 +254,29 @@ button:hover {
 <!-- DRUCKSEITE -->
 <div id="druckseite" style="display:none">
 
-  <div id="druck_logo">
-    <!-- ⭐ Dein komplettes SVG‑Logo kommt hier rein -->
-    <!-- (Ich lasse es hier weg, weil es extrem lang ist — du hast es bereits) -->
-  </div>
-
   <h2>Etiketten‑Restmengen Dokumentation</h2>
 
   <table class="druck-tabelle">
-    <tr><td class="druck-label">Etikettentyp</td><td id="druck_typ"></td></tr>
-    <tr><td class="druck-label">Restmenge</td><td id="druck_rest"></td></tr>
-    <tr><td class="druck-label">Auftragsnummer</td><td><input id="druck_auftrag"></td></tr>
-    <tr><td class="druck-label">Materialnummer</td><td><input id="druck_material"></td></tr>
-    <tr><td class="druck-label">Chargennummer</td><td><input id="druck_charge"></td></tr>
+    <tr>
+      <td class="druck-label">Etikettentyp</td>
+      <td id="druck_typ"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Restmenge</td>
+      <td id="druck_rest"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Auftragsnummer</td>
+      <td><input id="druck_auftrag"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Materialnummer</td>
+      <td><input id="druck_material"></td>
+    </tr>
+    <tr>
+      <td class="druck-label">Chargennummer</td>
+      <td><input id="druck_charge"></td>
+    </tr>
   </table>
 
   <div id="druck_timestamp">
@@ -366,33 +378,75 @@ function ladePreset(){
   d.value  = presets[t].d;
 }
 
-function berechnen(){
-  [abstand,dk,le,a,d].forEach(i=>i.classList.remove('warn','blink'));
-  const vals=[abstand.value,dk.value,le.value,a.value,d.value].map(Number);
-  if(vals.some(v=>isNaN(v)||v<=0)){markiere();return;}
+/* ⭐ SYSTEMFELDER 100% SPERREN */
+["dk", "le", "a", "d"].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener("keydown", e => e.preventDefault());
+  el.addEventListener("wheel", e => e.preventDefault(), { passive: false });
+  el.addEventListener("mousedown", e => e.preventDefault());
+  el.addEventListener("touchstart", e => e.preventDefault());
+});
 
-  const da = Number(dk.value)+2*Number(abstand.value);
+function berechnen() {
+  [abstand, dk, le, a, d].forEach(i => i.classList.remove('warn', 'blink'));
+  ergebnis.classList.remove('blink');
+
+  const AB = Number(abstand.value);
+  const DK = Number(dk.value);
+  const LE = Number(le.value);
+  const A  = Number(a.value);
+  const D  = Number(d.value);
+
+  if ([AB].some(v => isNaN(v) || v <= 0)) {
+    abstand.classList.add('warn','blink');
+    ergebnis.innerText = "FEHLER";
+    ergebnis.style.color = 'var(--luye-orange)';
+    return;
+  }
+
+  let fehler = false;
+
+  const maxAbstand = {
+    "6000": 80,
+    "7000": 90,
+    "10000": 110
+  };
+
+  const maxAB = maxAbstand[typ.value] || 80;
+
+  if (AB < 1 || AB > maxAB) {
+    fehler = true;
+    abstand.classList.add('warn','blink');
+  }
+
+  if (fehler) {
+    ergebnis.innerText = "FEHLER";
+    ergebnis.style.color = 'var(--luye-orange)';
+    return;
+  }
+
+  const DA = DK + 2 * AB;
+
   const anzahl = Math.floor(
-    Math.PI*(da*da-dk.value*dk.value)/(4*d.value*(le.value+a.value))
+    Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
   );
 
-  if(anzahl<50||anzahl>15000){
+  const typMax = {
+    "6000": 6000,
+    "7000": 7000,
+    "10000": 10000
+  };
+
+  const max = typMax[typ.value] || 15000;
+
+  if (anzahl < 50 || anzahl > max) {
     ergebnis.classList.add('blink');
-    ergebnis.style.color='var(--luye-orange)';
+    ergebnis.style.color = 'var(--luye-orange)';
   } else {
-    ergebnis.style.color='var(--luye-blue-dark)';
-    ergebnis.classList.remove('blink');
+    ergebnis.style.color = 'var(--luye-blue-dark)';
   }
 
   ergebnis.innerText = anzahl;
-}
-
-function markiere(){
-  [abstand,dk,le,a,d].forEach(i=>{
-    if(!i.value||i.value<=0){i.classList.add('warn','blink')}
-  });
-  ergebnis.innerText='FEHLER';
-  ergebnis.style.color='var(--luye-orange)';
 }
 
 function druckDialog(){
@@ -445,9 +499,16 @@ function adminSave() {
   adminClose();
 }
 </script>
-<script> if ("serviceWorker" in navigator) { navigator.serviceWorker.register("service-worker.js"); }
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
 </script>
+
 </body>
 </html>
+
+
 
 

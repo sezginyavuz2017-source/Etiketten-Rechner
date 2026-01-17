@@ -190,6 +190,15 @@ button:hover {
     display: none !important;
   }
 }
+
+/* ⭐ Handy‑Fix für Kontakt‑Button */
+@media (max-width: 480px) {
+  #kontaktBtn {
+    left: 120px !important;
+    bottom: 60px !important;
+    transform: scale(0.9);
+  }
+}
 </style>
 </head>
 
@@ -316,9 +325,10 @@ button:hover {
   padding:6px 12px;
   border-radius:8px;
   position:fixed;
-  left:150px;
+  left:130px;
   bottom:10px;
   z-index:1000;
+  white-space:nowrap;
 ">
   Sezgin Yavuz
 </button>
@@ -482,10 +492,14 @@ function druckDialog(){
 
   druckseite.style.display = 'block';
   window.print();
+
+  /* ⭐ Druckseite vollständig zurücksetzen */
   druckseite.style.display = 'none';
+  druck_datum.innerText = "";
+  druck_typ.innerText = "";
+  druck_rest.innerText = "";
 }
 
-/* ⭐ KONTAKT BUTTON FUNKTION */
 function kontaktMail() {
   const subject = encodeURIComponent("Rollenrechner ; ");
   const mailto =

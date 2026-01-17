@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Etiketten‑Restmengen Rechner – Luye Pharma</title>
+<link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#1381A6">
 
 <style>
 :root {
@@ -142,6 +143,10 @@ button:hover {
     line-height: 1.45;
   }
 
+  #druck_logo {
+    margin-bottom: 12mm;
+  }
+
   .druck-tabelle {
     width: 100%;
     border-collapse: collapse;
@@ -159,16 +164,15 @@ button:hover {
     color: var(--luye-blue-dark);
   }
 
-  /* Eingabefelder ohne Linien im Druck */
   #druckseite input {
-    border: none !important;
-    outline: none !important;
+    border: none;
+    border-bottom: 1px solid #000;
     font-size: 13pt;
     width: 100%;
     padding: 1mm 0;
   }
 
-  /* Zeitstempel unten links */
+  /* ⭐ FIX: Zeitstempel wirklich unten links */
   #druck_timestamp {
     position: fixed;
     bottom: 5mm;
@@ -216,27 +220,22 @@ button:hover {
         <label>Abstand (mm)</label>
         <input id="abstand" type="number" />
       </div>
-
       <div>
         <label>Hülse Außendurchmesser (mm)</label>
-        <input id="dk" type="number" readonly style="background:#eee;">
+        <input id="dk" type="number" />
       </div>
-
       <div>
         <label>Etikettenlänge (mm)</label>
-        <input id="le" type="number" readonly style="background:#eee;">
+        <input id="le" type="number" />
       </div>
-
       <div>
         <label>Abstand zwischen Etiketten (mm)</label>
-        <input id="a" type="number" readonly style="background:#eee;">
+        <input id="a" type="number" />
       </div>
-
       <div class="full">
         <label>Materialdicke (mm)</label>
-        <input id="d" type="number" step="0.0001" readonly style="background:#eee;">
+        <input id="d" type="number" step="0.0001" />
       </div>
-
       <div class="full">
         <button onclick="berechnen()">Restmenge berechnen</button>
       </div>
@@ -253,29 +252,19 @@ button:hover {
 <!-- DRUCKSEITE -->
 <div id="druckseite" style="display:none">
 
+  <div id="druck_logo">
+    <!-- ⭐ Dein komplettes SVG‑Logo kommt hier rein -->
+    <!-- (Ich lasse es hier weg, weil es extrem lang ist — du hast es bereits) -->
+  </div>
+
   <h2>Etiketten‑Restmengen Dokumentation</h2>
 
   <table class="druck-tabelle">
-    <tr>
-      <td class="druck-label">Etikettentyp</td>
-      <td id="druck_typ"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Restmenge</td>
-      <td id="druck_rest"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Auftragsnummer</td>
-      <td><input id="druck_auftrag"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Materialnummer</td>
-      <td><input id="druck_material"></td>
-    </tr>
-    <tr>
-      <td class="druck-label">Chargennummer</td>
-      <td><input id="druck_charge"></td>
-    </tr>
+    <tr><td class="druck-label">Etikettentyp</td><td id="druck_typ"></td></tr>
+    <tr><td class="druck-label">Restmenge</td><td id="druck_rest"></td></tr>
+    <tr><td class="druck-label">Auftragsnummer</td><td><input id="druck_auftrag"></td></tr>
+    <tr><td class="druck-label">Materialnummer</td><td><input id="druck_material"></td></tr>
+    <tr><td class="druck-label">Chargennummer</td><td><input id="druck_charge"></td></tr>
   </table>
 
   <div id="druck_timestamp">
@@ -377,64 +366,33 @@ function ladePreset(){
   d.value  = presets[t].d;
 }
 
-function berechnen() {
-  [abstand, dk, le, a, d].forEach(i => i.classList.remove('warn', 'blink'));
-  ergebnis.classList.remove('blink');
+function berechnen(){
+  [abstand,dk,le,a,d].forEach(i=>i.classList.remove('warn','blink'));
+  const vals=[abstand.value,dk.value,le.value,a.value,d.value].map(Number);
+  if(vals.some(v=>isNaN(v)||v<=0)){markiere();return;}
 
-  const AB = Number(abstand.value);
-  const DK = Number(dk.value);
-  const LE = Number(le.value);
-  const A  = Number(a.value);
-  const D  = Number(d.value);
-
-  if ([AB].some(v => isNaN(v) || v <= 0)) {
-    abstand.classList.add('warn','blink');
-    ergebnis.innerText = "FEHLER";
-    ergebnis.style.color = 'var(--luye-orange)';
-    return;
-  }
-
-  let fehler = false;
-
-  if (AB < 1 || AB > 80) { fehler = true; abstand.classList.add('warn','blink'); }
-  if (DK < 20 || DK > 120) { fehler = true; dk.classList.add('warn','blink'); }
-  if (LE < 20 || LE > 200) { fehler = true; le.classList.add('warn','blink'); }
-  if (A < 0 || A > 20) { fehler = true; a.classList.add('warn','blink'); }
-  if (D < 0.05 || D > 0.5) { fehler = true; d.classList.add('warn','blink'); }
-
-  if (DK >= DK + 2 * AB) {
-    fehler = true;
-    abstand.classList.add('warn','blink');
-    dk.classList.add('warn','blink');
-  }
-
-  if (fehler) {
-    ergebnis.innerText = "FEHLER";
-    ergebnis.style.color = 'var(--luye-orange)';
-    return;
-  }
-
-  const DA = DK + 2 * AB;
+  const da = Number(dk.value)+2*Number(abstand.value);
   const anzahl = Math.floor(
-    Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
+    Math.PI*(da*da-dk.value*dk.value)/(4*d.value*(le.value+a.value))
   );
 
-  const typMax = {
-    "6000": 6000,
-    "7000": 7000,
-    "10000": 10000
-  };
-
-  const max = typMax[typ.value] || 15000;
-
-  if (anzahl < 50 || anzahl > max) {
+  if(anzahl<50||anzahl>15000){
     ergebnis.classList.add('blink');
-    ergebnis.style.color = 'var(--luye-orange)';
+    ergebnis.style.color='var(--luye-orange)';
   } else {
-    ergebnis.style.color = 'var(--luye-blue-dark)';
+    ergebnis.style.color='var(--luye-blue-dark)';
+    ergebnis.classList.remove('blink');
   }
 
   ergebnis.innerText = anzahl;
+}
+
+function markiere(){
+  [abstand,dk,le,a,d].forEach(i=>{
+    if(!i.value||i.value<=0){i.classList.add('warn','blink')}
+  });
+  ergebnis.innerText='FEHLER';
+  ergebnis.style.color='var(--luye-orange)';
 }
 
 function druckDialog(){
@@ -487,6 +445,9 @@ function adminSave() {
   adminClose();
 }
 </script>
-
+<script> if ("serviceWorker" in navigator) { navigator.serviceWorker.register("service-worker.js"); }
+</script>
 </body>
 </html>
+
+

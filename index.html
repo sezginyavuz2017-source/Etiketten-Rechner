@@ -480,26 +480,39 @@ function berechnen() {
   ergebnis.innerText = anzahl;
 }
 
-function druckDialog(){
+/* ⭐ STABILER DRUCK‑FIX */
+function druckDialog() {
+
+  // Druckseite neu aufbauen
   druck_typ.innerText = typ.options[typ.selectedIndex]?.text || "-";
   druck_rest.innerText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
 
-  /* ⭐ Zeitstempel aktualisieren */
   const jetzt = new Date();
   druck_datum.innerText =
     jetzt.toLocaleDateString("de-DE") + " – " +
     jetzt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-  druckseite.style.display = 'block';
-  window.print();
+  // sichtbar machen, damit Browser neu rendert
+  druckseite.style.display = "block";
 
-  /* ⭐ Druckseite vollständig zurücksetzen */
-  druckseite.style.display = 'none';
-  druck_datum.innerText = "";
-  druck_typ.innerText = "";
-  druck_rest.innerText = "";
+  // zwei Frames warten → garantiert frisches Rendering
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+
+      window.print();
+
+      // nach dem Drucken wieder verstecken
+      druckseite.style.display = "none";
+
+      // Inhalte löschen → kein Cache möglich
+      druck_typ.innerText = "";
+      druck_rest.innerText = "";
+      druck_datum.innerText = "";
+    });
+  });
 }
 
+/* ⭐ KONTAKT BUTTON FUNKTION */
 function kontaktMail() {
   const subject = encodeURIComponent("Rollenrechner ; ");
   const mailto =
@@ -552,6 +565,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 

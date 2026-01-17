@@ -186,17 +186,17 @@ button:hover {
     font-size: 12pt;
   }
 
-  #adminBtn, #kontaktBtn, #adminPopup {
+  #adminBtn, #kontaktText, #adminPopup {
     display: none !important;
   }
 }
 
-/* ⭐ Handy‑Fix für Kontakt‑Button */
+/* ⭐ Handy‑Fix */
 @media (max-width: 480px) {
-  #kontaktBtn {
-    left: 120px !important;
+  #kontaktText {
+    left: 10px !important;
     bottom: 60px !important;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
 }
 </style>
@@ -289,7 +289,6 @@ button:hover {
     </tr>
   </table>
 
-  <!-- ⭐ Zeitstempel unten links -->
   <div id="druck_timestamp">
     <span id="druck_datum"></span>
   </div>
@@ -316,22 +315,21 @@ button:hover {
   Admin Einstellungen
 </button>
 
-<!-- ⭐ KONTAKT BUTTON -->
-<button id="kontaktBtn" onclick="kontaktMail()" style="
-  background:#1381A6;
-  color:white;
-  font-size:14px;
-  width:auto;
-  padding:6px 12px;
-  border-radius:8px;
+<!-- ⭐ KONTAKT TEXT (A4) -->
+<div id="kontaktText" style="
   position:fixed;
-  left:130px;
-  bottom:10px;
+  left:10px;
+  bottom:40px;
+  font-size:13px;
+  color:#06419F;
   z-index:1000;
   white-space:nowrap;
 ">
-  Sezgin Yavuz
-</button>
+  <a href="mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=Rollenrechner%20%3B"
+     style="color:#06419F; text-decoration:none;">
+     Sezgin Yavuz (E‑Mail)
+  </a>
+</div>
 
 <!-- ADMIN POPUP -->
 <div id="adminPopup" style="
@@ -434,13 +432,7 @@ function berechnen() {
 
   let fehler = false;
 
-  /* ⭐ MAXIMALER ABSTAND = 160 mm */
-  const maxAbstand = {
-    "6000": 160,
-    "7000": 160,
-    "10000": 160
-  };
-
+  const maxAbstand = { "6000": 160, "7000": 160, "10000": 160 };
   const maxAB = maxAbstand[typ.value] || 160;
 
   if (AB < 1 || AB > maxAB) {
@@ -460,13 +452,7 @@ function berechnen() {
     Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
   );
 
-  /* ⭐ WARNUNG BEI ÜBERSCHREITUNG DER MAXIMALEN STÜCKZAHL */
-  const typMax = {
-    "6000": 6000,
-    "7000": 7000,
-    "10000": 10000
-  };
-
+  const typMax = { "6000": 6000, "7000": 7000, "10000": 10000 };
   const max = typMax[typ.value] || 999999;
 
   if (anzahl > max) {
@@ -483,7 +469,6 @@ function berechnen() {
 /* ⭐ STABILER DRUCK‑FIX */
 function druckDialog() {
 
-  // Druckseite neu aufbauen
   druck_typ.innerText = typ.options[typ.selectedIndex]?.text || "-";
   druck_rest.innerText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
 
@@ -492,19 +477,14 @@ function druckDialog() {
     jetzt.toLocaleDateString("de-DE") + " – " +
     jetzt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-  // sichtbar machen, damit Browser neu rendert
   druckseite.style.display = "block";
 
-  // zwei Frames warten → garantiert frisches Rendering
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
 
       window.print();
 
-      // nach dem Drucken wieder verstecken
       druckseite.style.display = "none";
-
-      // Inhalte löschen → kein Cache möglich
       druck_typ.innerText = "";
       druck_rest.innerText = "";
       druck_datum.innerText = "";
@@ -512,7 +492,7 @@ function druckDialog() {
   });
 }
 
-/* ⭐ KONTAKT BUTTON FUNKTION */
+/* ⭐ KONTAKT FUNKTION */
 function kontaktMail() {
   const subject = encodeURIComponent("Rollenrechner ; ");
   const mailto =
@@ -565,6 +545,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
 
 
 

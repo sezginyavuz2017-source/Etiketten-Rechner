@@ -170,6 +170,7 @@ button:hover {
     padding: 1mm 0;
   }
 
+  /* ⭐ Zeitstempel unten links */
   #druck_timestamp {
     position: fixed;
     bottom: 5mm;
@@ -185,7 +186,7 @@ button:hover {
     font-size: 12pt;
   }
 
-  #adminBtn, #adminPopup {
+  #adminBtn, #kontaktBtn, #adminPopup {
     display: none !important;
   }
 }
@@ -279,6 +280,7 @@ button:hover {
     </tr>
   </table>
 
+  <!-- ⭐ Zeitstempel unten links -->
   <div id="druck_timestamp">
     <span id="druck_datum"></span>
   </div>
@@ -303,6 +305,22 @@ button:hover {
   z-index:1000;
 ">
   Admin Einstellungen
+</button>
+
+<!-- ⭐ KONTAKT BUTTON -->
+<button id="kontaktBtn" onclick="kontaktMail()" style="
+  background:#1381A6;
+  color:white;
+  font-size:14px;
+  width:auto;
+  padding:6px 12px;
+  border-radius:8px;
+  position:fixed;
+  left:150px;
+  bottom:10px;
+  z-index:1000;
+">
+  Sezgin Yavuz
 </button>
 
 <!-- ADMIN POPUP -->
@@ -456,6 +474,7 @@ function druckDialog(){
   druck_typ.innerText = typ.options[typ.selectedIndex]?.text || "-";
   druck_rest.innerText = ergebnis.innerText !== "–" ? ergebnis.innerText + " Stück" : "-";
 
+  /* ⭐ Zeitstempel aktualisieren */
   const jetzt = new Date();
   druck_datum.innerText =
     jetzt.toLocaleDateString("de-DE") + " – " +
@@ -464,6 +483,14 @@ function druckDialog(){
   druckseite.style.display = 'block';
   window.print();
   druckseite.style.display = 'none';
+}
+
+/* ⭐ KONTAKT BUTTON FUNKTION */
+function kontaktMail() {
+  const subject = encodeURIComponent("Rollenrechner ; ");
+  const mailto =
+    "mailto:sezginyavuz2017@gmail.com,Sezgin.Yavuz@luyepharma.eu?subject=" + subject;
+  window.location.href = mailto;
 }
 
 function adminLogin() {
@@ -511,6 +538,8 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+
 
 
 

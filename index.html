@@ -406,13 +406,14 @@ function berechnen() {
 
   let fehler = false;
 
+  /* ⭐ MAXIMALER ABSTAND = 160 mm */
   const maxAbstand = {
-    "6000": 80,
-    "7000": 90,
-    "10000": 110
+    "6000": 160,
+    "7000": 160,
+    "10000": 160
   };
 
-  const maxAB = maxAbstand[typ.value] || 80;
+  const maxAB = maxAbstand[typ.value] || 160;
 
   if (AB < 1 || AB > maxAB) {
     fehler = true;
@@ -431,18 +432,20 @@ function berechnen() {
     Math.PI * (DA * DA - DK * DK) / (4 * D * (LE + A))
   );
 
+  /* ⭐ WARNUNG BEI ÜBERSCHREITUNG DER MAXIMALEN STÜCKZAHL */
   const typMax = {
     "6000": 6000,
     "7000": 7000,
     "10000": 10000
   };
 
-  const max = typMax[typ.value] || 15000;
+  const max = typMax[typ.value] || 999999;
 
-  if (anzahl < 50 || anzahl > max) {
+  if (anzahl > max) {
     ergebnis.classList.add('blink');
     ergebnis.style.color = 'var(--luye-orange)';
   } else {
+    ergebnis.classList.remove('blink');
     ergebnis.style.color = 'var(--luye-blue-dark)';
   }
 
@@ -508,5 +511,7 @@ if ("serviceWorker" in navigator) {
 
 </body>
 </html>
+
+
 
 

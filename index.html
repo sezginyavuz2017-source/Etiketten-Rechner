@@ -30,8 +30,8 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
 
 #adminBtn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #1e293b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 9999; opacity: 0.3; }
 
-#adminOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:10000; padding: 20px; box-sizing: border-box; }
-.admin-modal { background: white; color: #1e293b; width: 100%; max-width: 400px; margin: auto; padding: 30px; border-radius: 20px; }
+#adminOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:10000; padding: 20px; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.admin-modal { background: white; color: #1e293b; width: 100%; max-width: 400px; margin: 20px auto 40px; padding: 30px; border-radius: 20px; }
 
 @media print { body * { visibility: hidden; } }
 </style>
@@ -45,9 +45,6 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
         <label>1. Auswahl Etiketten-Typ</label>
         <select id="typ" onchange="ladePreset()">
             <option value="">-- Rolle wählen --</option>
-            <option value="6000">6000 Stück (69mm)</option>
-            <option value="7000">7000 Stück (58mm)</option>
-            <option value="10000">10000 Stück (40mm)</option>
         </select>
 
         <div class="mess-info">Messung: Hülse bis Außenkante (mm)</div>
@@ -98,29 +95,80 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
         <h3>Admin-Einstellungen</h3>
         <input id="adminPW" type="password" placeholder="Passwort">
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-        <select id="adTyp" onchange="ladeAdminDaten()">
-            <option value="6000">6000er</option>
-            <option value="7000">7000er</option>
-            <option value="10000">10000er</option>
-        </select>
+
+        <label>Etikett wählen</label>
+        <select id="adTyp" onchange="ladeAdminDaten()"></select>
+
+        <label>Name / Bezeichnung</label>
+        <input id="ad_name" type="text" placeholder="z.B. 6000 Stück (69mm)">
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
           <div><label>dk</label><input id="ad_dk" type="number" step="0.1"></div>
           <div><label>le</label><input id="ad_le" type="number" step="0.1"></div>
           <div><label>a</label><input id="ad_a" type="number" step="0.1"></div>
           <div><label>d</label><input id="ad_d" type="number" step="0.0001"></div>
+          <div style="grid-column: 1 / -1;"><label>Kapazität (= 100%)</label><input id="ad_kap" type="number" step="1"></div>
         </div>
+
         <button onclick="saveAdmin()" style="background:#059669;">SPEICHERN</button>
+        <button onclick="neuesEtikett()" style="background:var(--luye); margin-top:10px;">+ NEUES ETIKETT HINZUFÜGEN</button>
+        <button onclick="loescheEtikett()" style="background:#dc2626; margin-top:10px;">ETIKETT LÖSCHEN</button>
         <button onclick="closeAdmin()" style="background:#64748b; margin-top:10px;">SCHLIESSEN</button>
     </div>
 </div>
 
 <script>
 const defaultValues = {
-    "6000": {dk:84, le:69, a:4, d:0.1275},
-    "7000": {dk:84, le:58, a:4, d:0.1275},
-    "10000": {dk:84, le:40, a:4, d:0.1275}
+    "6000": {name:"6000 Stück (69mm)", dk:84, le:69, a:4, d:0.1275, kap:6000},
+    "7000": {name:"7000 Stück (58mm)", dk:84, le:58, a:4, d:0.1275, kap:7000},
+    "10000": {name:"10000 Stück (40mm)", dk:84, le:40, a:4, d:0.1275, kap:10000}
 };
-let db = JSON.parse(localStorage.getItem("luye_v9")) || defaultValues;
+
+let db;
+const savedV10 = localStorage.getItem("luye_v10");
+if (savedV10) {
+    db = JSON.parse(savedV10);
+} else {
+    // Migration von altem Datenformat (falls vorhanden), sonst Standardwerte
+    const savedV9 = localStorage.getItem("luye_v9");
+    if (savedV9) {
+        const old = JSON.parse(savedV9);
+        db = {};
+        Object.keys(old).forEach(key => {
+            db[key] = { name: key + " Stück", dk: old[key].dk, le: old[key].le, a: old[key].a, d: old[key].d, kap: parseInt(key) || 1000 };
+        });
+    } else {
+        db = JSON.parse(JSON.stringify(defaultValues));
+    }
+    localStorage.setItem("luye_v10", JSON.stringify(db));
+}
+
+function buildTypSelect() {
+    const sel = document.getElementById("typ");
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- Rolle wählen --</option>';
+    Object.keys(db).forEach(id => {
+        const o = document.createElement("option");
+        o.value = id;
+        o.textContent = db[id].name;
+        sel.appendChild(o);
+    });
+    if(db[cur]) sel.value = cur;
+}
+
+function buildAdminSelect() {
+    const sel = document.getElementById("adTyp");
+    const cur = sel.value;
+    sel.innerHTML = "";
+    Object.keys(db).forEach(id => {
+        const o = document.createElement("option");
+        o.value = id;
+        o.textContent = db[id].name;
+        sel.appendChild(o);
+    });
+    if(db[cur]) sel.value = cur;
+    else if(sel.options.length) sel.value = sel.options[0].value;
+}
 
 function ladePreset() {
     const w = document.getElementById("typ").value;
@@ -131,6 +179,8 @@ function ladePreset() {
         document.getElementById("d").value = db[w].d;
     }
 }
+
+buildTypSelect();
 
 function berechnen() {
     const t = document.getElementById("typ").value;
@@ -143,32 +193,78 @@ function berechnen() {
     const DA = DK + (2 * m);
     const erg = Math.max(0, Math.floor((Math.PI * (DA*DA - DK*DK)) / (4 * D * (LE + A))));
     document.getElementById("ergebnis").innerText = erg.toLocaleString('de-DE');
-    const p = Math.min(100, Math.round((erg / parseInt(t)) * 100));
+    const kap = db[t] ? db[t].kap : parseInt(t);
+    const p = Math.min(100, Math.round((erg / kap) * 100));
     document.getElementById("balkenContainer").style.display = "block";
     document.getElementById("balken").style.width = p + "%";
     document.getElementById("prozentText").innerText = p + "% Restmenge";
 }
 
-function openAdmin() { document.getElementById("adminOverlay").style.display = "block"; ladeAdminDaten(); }
+function openAdmin() { document.getElementById("adminOverlay").style.display = "block"; buildAdminSelect(); ladeAdminDaten(); }
 function closeAdmin() { document.getElementById("adminOverlay").style.display = "none"; }
 function ladeAdminDaten() {
     const t = document.getElementById("adTyp").value;
+    if(!t || !db[t]) return;
+    document.getElementById("ad_name").value = db[t].name;
     document.getElementById("ad_dk").value = db[t].dk;
     document.getElementById("ad_le").value = db[t].le;
     document.getElementById("ad_a").value = db[t].a;
     document.getElementById("ad_d").value = db[t].d;
+    document.getElementById("ad_kap").value = db[t].kap;
 }
 function saveAdmin() {
     if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
     const t = document.getElementById("adTyp").value;
-    db[t] = { dk: parseFloat(document.getElementById("ad_dk").value), le: parseFloat(document.getElementById("ad_le").value), a: parseFloat(document.getElementById("ad_a").value), d: parseFloat(document.getElementById("ad_d").value) };
-    localStorage.setItem("luye_v9", JSON.stringify(db));
-    ladePreset(); closeAdmin();
+    if(!t || !db[t]) return alert("Kein Etikett ausgewählt.");
+    const name = document.getElementById("ad_name").value.trim();
+    if(!name) return alert("Bitte einen Namen eingeben.");
+    db[t] = {
+        name: name,
+        dk: parseFloat(document.getElementById("ad_dk").value),
+        le: parseFloat(document.getElementById("ad_le").value),
+        a: parseFloat(document.getElementById("ad_a").value),
+        d: parseFloat(document.getElementById("ad_d").value),
+        kap: parseFloat(document.getElementById("ad_kap").value)
+    };
+    localStorage.setItem("luye_v10", JSON.stringify(db));
+    buildAdminSelect();
+    buildTypSelect();
+    ladePreset();
+    closeAdmin();
+}
+
+function neuesEtikett() {
+    if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
+    const name = prompt("Name für das neue Etikett (z.B. 5000 Stück (32mm)):");
+    if(!name || !name.trim()) return;
+    const id = "t" + Date.now();
+    db[id] = { name: name.trim(), dk: 84, le: 40, a: 4, d: 0.1275, kap: 1000 };
+    localStorage.setItem("luye_v10", JSON.stringify(db));
+    buildAdminSelect();
+    document.getElementById("adTyp").value = id;
+    ladeAdminDaten();
+    buildTypSelect();
+    alert("Neues Etikett angelegt. Bitte Messwerte eintragen und SPEICHERN klicken.");
+}
+
+function loescheEtikett() {
+    if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
+    const t = document.getElementById("adTyp").value;
+    if(!t || !db[t]) return;
+    if(Object.keys(db).length <= 1) return alert("Es muss mindestens ein Etikett bestehen bleiben.");
+    if(!confirm('Etikett "' + db[t].name + '" wirklich löschen?')) return;
+    delete db[t];
+    localStorage.setItem("luye_v10", JSON.stringify(db));
+    buildAdminSelect();
+    ladeAdminDaten();
+    buildTypSelect();
 }
 
 function drucken() {
     const r = document.getElementById("ergebnis").innerText;
     if(r === "--") return;
+    const typId = document.getElementById("typ").value;
+    const typName = db[typId] ? db[typId].name : typId;
     const jetzt = new Date();
     const ts = jetzt.toLocaleDateString("de-DE") + " - " + jetzt.getHours().toString().padStart(2,'0') + ":" + jetzt.getMinutes().toString().padStart(2,'0');
     
@@ -191,7 +287,7 @@ function drucken() {
             <div class="header-p"><h2>Restmengen-Bewertung (Luye Pharma)</h2></div>
             <table>
                 <tr><td>Restmenge:</td><td class="bold">${r} Stück</td></tr>
-                <tr><td>Rollen-Basis:</td><td>${document.getElementById("typ").value}er Rolle</td></tr>
+                <tr><td>Rollen-Basis:</td><td>${typName}</td></tr>
                 <tr><td>Auftrag:</td><td>${document.getElementById("auftrag").value || "---"}</td></tr>
                 <tr><td>Charge:</td><td>${document.getElementById("charge").value || "---"}</td></tr>
             </table>
@@ -208,12 +304,4 @@ function drucken() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 

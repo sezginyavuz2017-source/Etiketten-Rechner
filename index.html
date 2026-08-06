@@ -113,7 +113,18 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
         <button onclick="saveAdmin()" style="background:#059669;">SPEICHERN</button>
         <button onclick="neuesEtikett()" style="background:var(--luye); margin-top:10px;">+ NEUES ETIKETT HINZUFÜGEN</button>
         <button onclick="loescheEtikett()" style="background:#dc2626; margin-top:10px;">ETIKETT LÖSCHEN</button>
-        <button onclick="closeAdmin()" style="background:#64748b; margin-top:10px;">SCHLIESSEN</button>
+
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <div style="font-size:12px; color:#64748b; margin-bottom:10px; line-height:1.5;">
+            Diese Änderungen gelten erstmal nur auf <b>diesem</b> Gerät/Browser. Damit sie für <b>alle</b> gelten, Export erzeugen und den Text an den Entwickler schicken.
+        </div>
+        <button onclick="exportAenderung()" style="background:#f59e0b;">EXPORT FÜR ENTWICKLER</button>
+        <textarea id="exportBox" readonly style="display:none; width:100%; height:150px; font-family:monospace; font-size:12px; margin-top:10px; border:2px solid #e2e8f0; border-radius:10px; padding:10px; box-sizing:border-box;"></textarea>
+        <button id="copyBtn" onclick="copyExport()" style="display:none; background:#0ea5e9; margin-top:10px;">IN ZWISCHENABLAGE KOPIEREN</button>
+        <button onclick="resetToDefaults()" style="background:#64748b; margin-top:10px;">AUF ZENTRALE WERTE ZURÜCKSETZEN</button>
+
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        <button onclick="closeAdmin()" style="background:#64748b;">SCHLIESSEN</button>
     </div>
 </div>
 
@@ -245,6 +256,43 @@ function neuesEtikett() {
     ladeAdminDaten();
     buildTypSelect();
     alert("Neues Etikett angelegt. Bitte Messwerte eintragen und SPEICHERN klicken.");
+}
+
+function exportAenderung() {
+    if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
+    const json = JSON.stringify(db, null, 2);
+    const box = document.getElementById("exportBox");
+    box.value = json;
+    box.style.display = "block";
+    document.getElementById("copyBtn").style.display = "block";
+    box.focus();
+    box.select();
+}
+
+function copyExport() {
+    const box = document.getElementById("exportBox");
+    box.select();
+    box.setSelectionRange(0, 99999);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(box.value)
+            .then(() => alert("Kopiert! Bitte diesen Text an den Entwickler schicken, damit er für alle Geräte zentral übernommen wird."))
+            .catch(() => { document.execCommand("copy"); alert("Kopiert. Bitte diesen Text an den Entwickler schicken."); });
+    } else {
+        document.execCommand("copy");
+        alert("Kopiert. Bitte diesen Text an den Entwickler schicken.");
+    }
+}
+
+function resetToDefaults() {
+    if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
+    if(!confirm("Lokale Änderungen auf diesem Gerät verwerfen und die zentral hinterlegten Werte laden?")) return;
+    db = JSON.parse(JSON.stringify(defaultValues));
+    localStorage.setItem("luye_v10", JSON.stringify(db));
+    buildAdminSelect();
+    buildTypSelect();
+    ladeAdminDaten();
+    ladePreset();
+    alert("Zentrale Werte geladen.");
 }
 
 function loescheEtikett() {

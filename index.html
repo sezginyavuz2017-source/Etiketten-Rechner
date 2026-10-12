@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Luye Pharma Rollenrechner</title>
+<title>Sezgin's Rollenrechner</title>
 
 <style>
 :root { --luye: #1381A6; --dark: #06419F; --bg: #f8fafc; }
@@ -28,8 +28,7 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
 #balkenContainer { width: 100%; background: #e2e8f0; height: 12px; border-radius: 10px; overflow: hidden; margin-top: 15px; display:none; }
 #balken { height: 100%; width: 0%; background: var(--luye); transition: width 0.8s ease; }
 
-#adminBtn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #1e293b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 9999; opacity: 0.3; }
-
+#adminBtn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #1e293b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 9999; }
 #adminOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:10000; padding: 20px; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .admin-modal { background: white; color: #1e293b; width: 100%; max-width: 400px; margin: 20px auto 40px; padding: 30px; border-radius: 20px; }
 
@@ -38,7 +37,7 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
 </head>
 <body>
 
-<div class="header">Luye Rollenrechner</div>
+<div class="header">Sezgin's Rollenrechner</div>
 
 <div class="container">
     <div class="card">
@@ -140,7 +139,6 @@ const savedV10 = localStorage.getItem("luye_v10");
 if (savedV10) {
     db = JSON.parse(savedV10);
 } else {
-    // Migration von altem Datenformat (falls vorhanden), sonst Standardwerte
     const savedV9 = localStorage.getItem("luye_v9");
     if (savedV9) {
         const old = JSON.parse(savedV9);
@@ -332,7 +330,7 @@ function drucken() {
             </style>
         </head>
         <body>
-            <div class="header-p"><h2>Restmengen-Bewertung (Luye Pharma)</h2></div>
+            <div class="header-p"><h2>Restmengen-Bewertung (Sezgin's Rollenrechner)</h2></div>
             <table>
                 <tr><td>Restmenge:</td><td class="bold">${r} Stück</td></tr>
                 <tr><td>Rollen-Basis:</td><td>${typName}</td></tr>

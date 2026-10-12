@@ -6,10 +6,10 @@
 <title>Sezgin's Rollenrechner</title>
 
 <style>
-:root { --luye: #1381A6; --dark: #06419F; --bg: #f8fafc; }
+:root { --brand: #1381A6; --brand-dark: #06419F; --bg: #f8fafc; }
 body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: #1e293b; }
 
-.header { background: var(--luye); color: white; padding: 25px; text-align: center; font-weight: bold; font-size: 22px; border-bottom: 5px solid var(--dark); }
+.header { background: var(--brand); color: white; padding: 25px; text-align: center; font-weight: bold; font-size: 22px; border-bottom: 5px solid var(--brand-dark); }
 .container { max-width: 500px; margin: auto; padding: 15px; padding-bottom: 100px; }
 
 .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
@@ -20,13 +20,13 @@ label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; fo
 select, input { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
 input[readonly] { background: #f1f5f9 !important; color: #64748b; font-weight: bold; border-style: dashed; }
 
-button { width: 100%; padding: 16px; background: var(--luye); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+button { width: 100%; padding: 16px; background: var(--brand); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
 
-.result-box { background: white; border: 3px solid var(--luye); border-radius: 20px; text-align: center; padding: 25px; margin: 20px 0; }
-.res-val { font-size: 52px; font-weight: 800; color: var(--dark); display: block; line-height: 1; }
+.result-box { background: white; border: 3px solid var(--brand); border-radius: 20px; text-align: center; padding: 25px; margin: 20px 0; }
+.res-val { font-size: 52px; font-weight: 800; color: var(--brand-dark); display: block; line-height: 1; }
 
 #balkenContainer { width: 100%; background: #e2e8f0; height: 12px; border-radius: 10px; overflow: hidden; margin-top: 15px; display:none; }
-#balken { height: 100%; width: 0%; background: var(--luye); transition: width 0.8s ease; }
+#balken { height: 100%; width: 0%; background: var(--brand); transition: width 0.8s ease; }
 
 #adminBtn { position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #1e293b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; z-index: 9999; }
 #adminOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:10000; padding: 20px; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -75,7 +75,7 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
     <div class="result-box">
         <span id="ergebnis" class="res-val">--</span>
         <div style="font-size: 14px; color: #64748b; font-weight: 600;">Etiketten auf Rolle</div>
-        <div id="prozentText" style="font-weight:700; color: var(--luye); margin-top:10px;"></div>
+        <div id="prozentText" style="font-weight:700; color: var(--brand); margin-top:10px;"></div>
         <div id="balkenContainer"><div id="balken"></div></div>
     </div>
 
@@ -110,7 +110,7 @@ button { width: 100%; padding: 16px; background: var(--luye); color: white; bord
         </div>
 
         <button onclick="saveAdmin()" style="background:#059669;">SPEICHERN</button>
-        <button onclick="neuesEtikett()" style="background:var(--luye); margin-top:10px;">+ NEUES ETIKETT HINZUFÜGEN</button>
+        <button onclick="neuesEtikett()" style="background:var(--brand); margin-top:10px;">+ NEUES ETIKETT HINZUFÜGEN</button>
         <button onclick="loescheEtikett()" style="background:#dc2626; margin-top:10px;">ETIKETT LÖSCHEN</button>
 
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
@@ -135,11 +135,11 @@ const defaultValues = {
 };
 
 let db;
-const savedV10 = localStorage.getItem("luye_v10");
+const savedV10 = localStorage.getItem("sezgin_v10");
 if (savedV10) {
     db = JSON.parse(savedV10);
 } else {
-    const savedV9 = localStorage.getItem("luye_v9");
+    const savedV9 = localStorage.getItem("sezgin_v9");
     if (savedV9) {
         const old = JSON.parse(savedV9);
         db = {};
@@ -149,7 +149,7 @@ if (savedV10) {
     } else {
         db = JSON.parse(JSON.stringify(defaultValues));
     }
-    localStorage.setItem("luye_v10", JSON.stringify(db));
+    localStorage.setItem("sezgin_v10", JSON.stringify(db));
 }
 
 function buildTypSelect() {
@@ -235,7 +235,7 @@ function saveAdmin() {
         d: parseFloat(document.getElementById("ad_d").value),
         kap: parseFloat(document.getElementById("ad_kap").value)
     };
-    localStorage.setItem("luye_v10", JSON.stringify(db));
+    localStorage.setItem("sezgin_v10", JSON.stringify(db));
     buildAdminSelect();
     buildTypSelect();
     ladePreset();
@@ -248,7 +248,7 @@ function neuesEtikett() {
     if(!name || !name.trim()) return;
     const id = "t" + Date.now();
     db[id] = { name: name.trim(), dk: 84, le: 40, a: 4, d: 0.1275, kap: 1000 };
-    localStorage.setItem("luye_v10", JSON.stringify(db));
+    localStorage.setItem("sezgin_v10", JSON.stringify(db));
     buildAdminSelect();
     document.getElementById("adTyp").value = id;
     ladeAdminDaten();
@@ -285,7 +285,7 @@ function resetToDefaults() {
     if(document.getElementById("adminPW").value !== "11111111") return alert("Falsch");
     if(!confirm("Lokale Änderungen auf diesem Gerät verwerfen und die zentral hinterlegten Werte laden?")) return;
     db = JSON.parse(JSON.stringify(defaultValues));
-    localStorage.setItem("luye_v10", JSON.stringify(db));
+    localStorage.setItem("sezgin_v10", JSON.stringify(db));
     buildAdminSelect();
     buildTypSelect();
     ladeAdminDaten();
@@ -300,7 +300,7 @@ function loescheEtikett() {
     if(Object.keys(db).length <= 1) return alert("Es muss mindestens ein Etikett bestehen bleiben.");
     if(!confirm('Etikett "' + db[t].name + '" wirklich löschen?')) return;
     delete db[t];
-    localStorage.setItem("luye_v10", JSON.stringify(db));
+    localStorage.setItem("sezgin_v10", JSON.stringify(db));
     buildAdminSelect();
     ladeAdminDaten();
     buildTypSelect();
